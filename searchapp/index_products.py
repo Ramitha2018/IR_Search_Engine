@@ -1,5 +1,5 @@
 from elasticsearch import Elasticsearch, helpers
-from sinling import SinhalaTokenizer
+from sinling import SinhalaTokenizer #from https://github.com/ysenarath/sinling
 from searchapp.constants import INDEX_NAME
 from searchapp.data import all_songs, SongData
 
