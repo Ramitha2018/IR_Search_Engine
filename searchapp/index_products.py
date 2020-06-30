@@ -1,5 +1,5 @@
 from elasticsearch import Elasticsearch, helpers
-from sinling import SinhalaTokenizer #from https://github.com/ysenarath/sinling
+from sinling import SinhalaTokenizer
 from searchapp.constants import INDEX_NAME
 from searchapp.data import all_songs, SongData
 
@@ -13,16 +13,16 @@ def main():
         index=INDEX_NAME,
         body={
             'mappings': {
-        		'properties': {
-        			'lyrics': {
-        				'type': 'text',
-        				'fields': {
-        					'lyrics_analyzed': {
-        						'type': 'text',
-        						'analyzer': 'Sinhala_lyrics_analyzer'
-        					}
-        				}
-        			}#,
+        	#	'properties': {
+        	#		'lyrics': {
+        	#			'type': 'text',
+        	#			'fields': {
+        	#				'lyrics_analyzed': {
+        	#					'type': 'text',
+        	#					'analyzer': 'Sinhala_lyrics_analyzer'
+        	#				}
+        	#			}
+        	#		}#,
         			#'description': {
         			#	'type': 'text',
         			#	'fields': {
@@ -32,23 +32,69 @@ def main():
         			#		}
         			#	}
         			#}
-        		}
+        	#	}
             },
             'settings': {	
-                'analysis': {
-                    'analyzer': {
-                        'Sinhala_lyrics_analyzer': {
-                            'type': 'custom',
-                            'tokenizer': 'SinhalaTokenizer'
-                        }
-                    }
-                }
+             #   'analysis': {
+             #       'analyzer': {
+              #          'Sinhala_lyrics_analyzer': {
+               #             'type': 'custom',
+                #            'tokenizer': 'SinhalaTokenizer'
+                #        }
+                 #   }
+                #}
             },
         },
     )
 
-    #index_product(es, all_products())
+    es.indices.delete(index="tokenized", ignore=404)
+    es.indices.create(
+        index = "tokenized",
+        body = {
+            'mappings':{
+                "properties": {
+                    "artist_name": {
+                        "type": "text",
+                        "fields": {
+                            "tokened_artist": {
+                                "type": "keyword",
+                                "ignore_above": 50
+                            }
+                        },
+                        "analyzer": "custom_sinhala_analyzer",
+                        "search_analyzer": "standard"
+                    }
+                }
+            },
+            'settings': {
+                "index": {
+                    "analysis": {
+                        "analyzer": {
+                            "custom_sinhala_analyzer": {
+                                "type": "custom",
+                                "tokenizer": "icu_tokenizer",
+                                "filter": ["edgeNgram"]
+                            }
+                        },
+                        "filter": {
+                            "edgeNgram": {
+                                "type": "edge_ngram",
+                                "min_gram": 2,
+                                "max_gram": 40,
+                                "side": "front"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
+
     songs_to_index(es, all_songs())
+#indexing the tokenized index using initial index
+    response = helpers.reindex(es, INDEX_NAME, "tokenized")
+
+    print(response)
 
 def index_song(es, songs):
     """Add a single product to the ProductData index."""

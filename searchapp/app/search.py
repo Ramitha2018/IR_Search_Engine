@@ -1,5 +1,6 @@
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
+from sinling import SinhalaTokenizer
 from typing import List
 
 from searchapp.constants import INDEX_NAME
@@ -37,14 +38,84 @@ def search(term: str, count: int) -> List[SearchResult]:
     # not included by default in the current version of elasticsearch-py
     client.transport.connection_pool.connection.headers.update(HEADERS)
 
-    s = Search(using=client, index=INDEX_NAME)
-    title_query = {'match': {'title': {'query': term, 'operator': 'and', 'fuzziness': 'AUTO'}}}
+    tokenizer = SinhalaTokenizer()
+
+    terms = tokenizer.tokenize(term)
+
+    print(terms)
+
+    if ('artist' in terms and ':' in terms):
+        terms.remove('artist')
+        terms.remove(':')
+        term = " ".join(terms)
+        print('artist got here '+ term)
+        bool_query = {
+                    'bool': {
+                        'must': {
+                            'match': {
+                                'artist_name': {
+                                    'query': term,
+                                    'operator': 'and',
+                                    'fuzziness': 'AUTO'
+                                }
+                            }
+                        },
+                        'should': {
+                            'multi_match': {
+                                'query': term,
+                                'fields': ['title^2','lyrics'],
+                                'type': 'best_fields',
+                                'operator': 'or'
+                            }
+                        }
+                    }
+                }
+        s = Search(using=client, index="tokenized")
+        docs = s.query(bool_query)[:count].execute()
+        return [SearchResult.from_doc(d) for d in docs]
+            
+    elif ('lyrics' in terms and ':' in terms):
+        terms.remove('lyrics')
+        terms.remove(':')
+        term = " ".join(terms)
+        print('lyrics got here '+ term)
+        bool_query = {
+                    'bool': {
+                        'must': {
+                            'match': {
+                                'lyrics': {
+                                    'query': term,
+                                    'operator': 'and',
+                                    'fuzziness': '2'
+                                }
+                            }
+                        },
+                        'should': {
+                            'multi_match': {
+                                    'query': term,
+                                    'fields': ['title^3','artist_name'],
+                                    'type': 'best_fields',
+                                    'operator': 'and'
+                            }
+                        }
+                    }
+                }
+        s = Search(using=client, index=INDEX_NAME)
+        docs = s.query(bool_query)[:count].execute()
+        return [SearchResult.from_doc(d) for d in docs]
+
+    else:
+        term = " ".join(terms)
+        print('else got here '+ term)
+        s = Search(using=client, index=INDEX_NAME)
+        title_query = {'match': {'title': {'query': term, 'operator': 'and', 'fuzziness': 'AUTO'}}}
     #lyrics_query = {'match': {'lyrics': {'query': term, 'operator': 'and', 'fuzziness':'AUTO'}}}
     #name_query = {'term': {'name.english_analyzed': term}}
-    dis_max_query = {'dis_max': {'queries': [title_query]}}
+        artist_query = {'match': {'artist_name': {'query': term, 'operator': 'and', 'fuzziness': 3}}}
+        dis_max_query = {'dis_max': {'queries': [title_query, artist_query]}}
 
-    docs = s.query(dis_max_query)[:count].execute()
+        docs = s.query(dis_max_query)[:count].execute()
 
-    print(docs[0].title)
+    #print(docs[0].title)
 
-    return [SearchResult.from_doc(d) for d in docs]
+        return [SearchResult.from_doc(d) for d in docs]

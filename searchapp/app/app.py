@@ -34,8 +34,8 @@ def search_single_song():
     songs_by_category = [(query, search(query, num_results))]
 
     for songs in songs_by_category:
-        print(songs[1][0])
-        print(songs[1][0].title)
+        if len(songs) == 1:
+            songs[1][0] = {"title": "No Results Found"}
     return render_template(
         'index.html',
         songs_by_category=songs_by_category,
