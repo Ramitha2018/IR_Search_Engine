@@ -21,7 +21,7 @@ Dataset used for indexing is include inside searchapp/sinhala_songs_corpus.json
 	```
 	pip install -r requirements.txt
 	```
-	(If you had trouble with getting the "Sining" from the git repository, Add it manually from https://github.com/ysenarath/sinling)
+	(If you had trouble with getting the "Sinling" dependancy from the git repository, Add it manually from https://github.com/ysenarath/sinling)
 4. setup searchapp
 	```
 	pip install -e .
