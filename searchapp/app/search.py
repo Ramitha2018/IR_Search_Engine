@@ -44,7 +44,41 @@ def search(term: str, count: int) -> List[SearchResult]:
 
     print(terms)
 
-    if ('artist' in terms and ':' in terms):
+    if ('top' in term and ('songs' in term or 'artist' in term)):
+        if ('songs' in term):
+            bool_query = {
+                    'bool': {
+                        'must': {
+                            'range': {
+                                'track_rating': {
+                                    'gte': 0
+                                }
+                            }
+                        },
+                    }
+                }
+            s = Search(using=client, index="tokenized")
+            docs = s.query(bool_query).sort('track_rating.sort', {'order':'desc'})[:count].execute()
+            return [SearchResult.from_doc(d) for d in docs]
+
+        if ('artis' in term):
+            bool_query = {
+                    'bool': {
+                        'must': {
+                            'range': {
+                                'artist_rating': {
+                                    'gte': 0
+                                }
+                            }
+                        },
+                    }
+                }
+            s = Search(using=client, index="tokenized")
+            docs = s.query(bool_query).sort('artist_rating.sort', {'order':'desc'})[:count].execute()
+            return [SearchResult.from_doc(d) for d in docs]
+
+
+    elif ('artist' in terms and ':' in terms):
         terms.remove('artist')
         terms.remove(':')
         term = " ".join(terms)
@@ -87,6 +121,36 @@ def search(term: str, count: int) -> List[SearchResult]:
                                     'query': term,
                                     'operator': 'and',
                                     'fuzziness': '2'
+                                }
+                            }
+                        },
+                        'should': {
+                            'multi_match': {
+                                    'query': term,
+                                    'fields': ['title^3','artist_name'],
+                                    'type': 'best_fields',
+                                    'operator': 'and'
+                            }
+                        }
+                    }
+                }
+        s = Search(using=client, index=INDEX_NAME)
+        docs = s.query(bool_query)[:count].execute()
+        return [SearchResult.from_doc(d) for d in docs]
+
+    elif ('album' in terms and ':' in terms):
+        terms.remove('album')
+        terms.remove(':')
+        term = " ".join(terms)
+        print('albuns got here '+ term)
+        bool_query = {
+                    'bool': {
+                        'must': {
+                            'match': {
+                                'album_name': {
+                                    'query': term,
+                                    'operator': 'and',
+                                    'fuzziness': 'AUTO'
                                 }
                             }
                         },

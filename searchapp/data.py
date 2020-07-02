@@ -12,9 +12,12 @@ class SongData():
 
     def __init__(self, id_, track_id, track_name_en, track_name_si, track_rating, album_name_en, album_name_si, artist_name_en, artist_name_si, artist_rating, lyrics):
         self.title = track_name_si
+        self.title_singlish = track_name_en
         self.track_rating = track_rating
         self.album_name = album_name_si
+        self.album_name_singlish = album_name_en
         self.artist_name = artist_name_si
+        self.artist_name_singlish = artist_name_en
         self.artist_rating = artist_rating
         self.lyrics = lyrics
         self.id = id_

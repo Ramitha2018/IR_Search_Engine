@@ -63,6 +63,24 @@ def main():
                         },
                         "analyzer": "custom_sinhala_analyzer",
                         "search_analyzer": "standard"
+                    },
+                    "track_rating": {
+                        "type": "keyword",
+                            "fields": {
+                                "sort": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                    },
+                    "artist_rating": {
+                        "type": "keyword",
+                            "fields": {
+                                "sort": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
                     }
                 }
             },
@@ -128,7 +146,10 @@ def songs_to_index(es, songs):
             "artist_name": i.artist_name,
             "artist_rating": i.artist_rating,
             "album_name": i.album_name,
-            "lyrics": i.lyrics
+            "lyrics": i.lyrics,
+            "title_sin": i.title_singlish,
+            "album_sin": i.album_name_singlish,
+            "artists_sin": i.artist_name_singlish
         	}
 		}
 		for i in songs
