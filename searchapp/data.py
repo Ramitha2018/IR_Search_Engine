@@ -5,11 +5,7 @@ _all_songs = None
 
 
 class SongData():
-    """
-    Our product records. In this case they come from a json file, but you could
-    just as easily load them from a database, or anywhere else.
-    """
-
+   
     def __init__(self, id_, track_id, track_name_en, track_name_si, track_rating, album_name_en, album_name_si, artist_name_en, artist_name_si, artist_rating, lyrics):
         self.title = track_name_si
         self.title_singlish = track_name_en
@@ -39,8 +35,8 @@ class SongData():
 
 def all_songs():
     """
-    Returns a list of ~20,000 ProductData objects, loaded from
-    searchapp/products.json
+    Returns a list of All SongData objects, loaded from
+    searchapp/<data_set>.json
     """
 
     global _all_songs

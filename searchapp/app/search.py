@@ -9,7 +9,7 @@ HEADERS = {'content-type': 'application/json'}
 
 
 class SearchResult():
-    """Represents a product returned from elasticsearch."""
+    """Represents a song returned from elasticsearch."""
     def __init__(self, id_, title, track_rating, album_name, artist_name, artist_rating, lyrics):
         self.id = id_
         self.title = title
@@ -43,6 +43,11 @@ def search(term: str, count: int) -> List[SearchResult]:
     terms = tokenizer.tokenize(term)
 
     print(terms)
+
+    if (term == "songs" or terms == []):
+        s = Search(using=client, index=INDEX_NAME)
+        docs = s.query({"bool": {"must": [{"match_all":{}}]}})[:count].execute()
+        return [SearchResult.from_doc(d) for d in docs]
 
     if ('top' in term and ('songs' in term or 'artist' in term)):
         if ('songs' in term):
@@ -173,10 +178,9 @@ def search(term: str, count: int) -> List[SearchResult]:
         print('else got here '+ term)
         s = Search(using=client, index=INDEX_NAME)
         title_query = {'match': {'title': {'query': term, 'operator': 'and', 'fuzziness': 'AUTO'}}}
-    #lyrics_query = {'match': {'lyrics': {'query': term, 'operator': 'and', 'fuzziness':'AUTO'}}}
-    #name_query = {'term': {'name.english_analyzed': term}}
-        artist_query = {'match': {'artist_name': {'query': term, 'operator': 'and', 'fuzziness': 3}}}
-        dis_max_query = {'dis_max': {'queries': [title_query, artist_query]}}
+        lyrics_query = {'match': {'lyrics': {'query': term, 'operator': 'and', 'fuzziness':'AUTO'}}}
+        artist_query = {'match': {'artist_name': {'query': term, 'operator': 'and', 'fuzziness': 'AUTO'}}}
+        dis_max_query = {'dis_max': {'queries': [title_query, artist_query]}, "tie-breaker":0.5}
 
         docs = s.query(dis_max_query)[:count].execute()
 
