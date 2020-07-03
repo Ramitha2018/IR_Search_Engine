@@ -14,7 +14,7 @@ def index():
     """
     search_terms = []
 
-    num_results = 9
+    num_results = 10
     songs_by_category = [(t, search(t, num_results)) for t in search_terms]
     return render_template(
         'index.html',

@@ -8,7 +8,7 @@ to include doc_types and type declerations)
 
 Flask version - Upgrade to 1.0 or higher if using a container(docker, kubernetes, etc.)
 
-Dataset used for indexing is include inside searchapp/sinhala_songs_corpus.json
+Dataset used for indexing is included inside searchapp/sinhala_songs_corpus.json
 
 # Instructions for the setup
 1. Clone or download the repository (Linux/Unix OS is preferred)

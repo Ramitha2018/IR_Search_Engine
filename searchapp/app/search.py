@@ -50,7 +50,7 @@ def search(term: str, count: int) -> List[SearchResult]:
                     'bool': {
                         'must': {
                             'range': {
-                                'track_rating': {
+                                'track_rating.sort': {
                                     'gte': 0
                                 }
                             }
@@ -58,7 +58,7 @@ def search(term: str, count: int) -> List[SearchResult]:
                     }
                 }
             s = Search(using=client, index="tokenized")
-            docs = s.query(bool_query).sort('track_rating.sort', {'order':'desc'})[:count].execute()
+            docs = s.query(bool_query)[:count].sort('-track_rating.sort').execute()
             return [SearchResult.from_doc(d) for d in docs]
 
         if ('artis' in term):
@@ -74,7 +74,7 @@ def search(term: str, count: int) -> List[SearchResult]:
                     }
                 }
             s = Search(using=client, index="tokenized")
-            docs = s.query(bool_query).sort('artist_rating.sort', {'order':'desc'})[:count].execute()
+            docs = s.query(bool_query)[:count].sort('-artist_rating.sort').execute()
             return [SearchResult.from_doc(d) for d in docs]
 
 
